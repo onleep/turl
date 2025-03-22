@@ -3,12 +3,15 @@ POST http://localhost:8000/links/shorten
 Content-Type: application/json
 
 {
-  "url": "http://example121.com"
+  "url": "http://example124.com",
+  "expired_at": "2025-03-31 18:58",
+  "custom_alias": "hellow",
+  "onetime": true
 }
 
 
 ### redirect url
-GET http://localhost:8000/links/shorten/11EpL
+GET http://localhost:8000/hellow
 
 
 ### delete turl
@@ -16,8 +19,8 @@ DELETE http://localhost:8000/links/shorten/
 Content-Type: application/json
 
 {
-  "turl": "eWG11",
-  "token": "5e66e21e8a523a265f30571a1330117b"
+  "turl": "http://localhost:8000/BwWFd",
+  "token": "fa1309ba55fbbdaa762e1091a56f057a"
 }
 
 
@@ -26,10 +29,13 @@ PUT http://localhost:8000/links/shorten/
 Content-Type: application/json
 
 {
-  "turl": "IHZwM",
-  "token": "d106f3db2cb86a912300a91bd77278ab"
+  "turl": "http://localhost:8000/i3De2",
+  "token": "95ab886c3aa5a6c5e556a44aadb6f6cb"
 }
 
 
 ### get stats
-GET http://localhost:8000/links/shorten/11EpL/stats
+GET http://localhost:8000/hellow/stats
+
+### get turl from original_url
+GET http://localhost:8000/links/search?original_url=http://example121.com

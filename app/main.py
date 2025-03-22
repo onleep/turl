@@ -1,11 +1,14 @@
 import asyncio
 
 from api.main import fastapi
-from db.main import initdb
+from db.mysql import initdb
+from sheduler.crontab import cron
+
 
 async def main():
     await asyncio.gather(
         asyncio.to_thread(initdb),
+        asyncio.to_thread(lambda: asyncio.run(cron())),
         asyncio.to_thread(lambda: asyncio.run(fastapi())),
     )
 

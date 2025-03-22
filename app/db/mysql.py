@@ -22,6 +22,7 @@ class Links(BaseModel):
     url = CharField()
     token = CharField()
     stats = IntegerField(default=0)
+    onetime = IntegerField(default=0)
     expired_at = DateTimeField(index=True, null=True, default=None)
     created_at = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
     updated_at = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')])

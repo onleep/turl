@@ -1,65 +1,115 @@
+import re
 from datetime import datetime, timedelta
 
 import uvicorn
-from api.model import URL, PostTurl, VerifyUser, GetStats
-from api.tools import gentoken, genturl
-from db.main import DB
+from db.mysql import DB
+from db.redis import redis
+from Dotenv import env
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
-from Dotenv import env
+
+from .models import GenTurl, GetStats, PostTurl, TurlFull, Url, VerifyUser
+from .tools import gentoken, genturl
 
 app = FastAPI()
 router = APIRouter()
-domain = env.get('URL_IP') or 'local'
+domain = env.get('URL_IP') or 'http://localhost:8000'
 
 
 @router.post('/shorten', response_model=PostTurl)
-async def posturl(req: URL):
-    turl = genturl()
+async def posturl(req: GenTurl):
+    info = {}
+    datenow = datetime.now()
+    expired = datenow + timedelta(days=7)
+    if cstm := req.expired_at:
+        texpiried = datetime.strptime(cstm, f'%Y-%m-%d %H:%M')
+        if texpiried > datenow: expired = texpiried
+        else: info['expired_at'] = 'Mintime is 1 day'
+    if cstm and expired > (maxtime := datenow + timedelta(days=30)):
+        info['expired_at'] = 'Maxtime is 30 days'
+        expired = maxtime
+
+    turl = req.custom_alias
+    if not turl or DB.links.get_or_none(DB.links.turl == turl):
+        if turl: info['custom_alias'] = f'Turl {turl} already exist'
+        turl = genturl()
     token = gentoken()
-    expired = datetime.now() + timedelta(days=7, hours=3)
-    DB.links.create(turl=turl, url=req.url, token=token, expired_at=expired)
-
-    turl = f'{domain}/shorten/{turl}'
+    DB.links.create(
+        turl=turl,
+        url=req.url,
+        token=token,
+        expired_at=expired,
+        onetime=req.onetime,
+    )
+    mapping = {'url': req.url, 'onetime': int(req.onetime)}
+    redis.hset(f"turl:{turl}", mapping=mapping)
+    expire = int((expired - datenow).total_seconds())
+    redis.expire(f"turl:{turl}", expire)
+    turl = f'{domain}/{turl}'
     expired_at = expired.strftime(f'%Y-%m-%d %H:%M:%S')
-    response = {'turl': turl, 'token': token, 'expired_at': expired_at}
-    return {'data': response}
-
-
-@router.get('/shorten/{short_code}')
-async def geturl(short_code: str):
-    data = DB.links.get_or_none(DB.links.turl == short_code)
-    if not data:
-        raise HTTPException(status_code=404, detail="turl does not exist")
-    DB.links.update(stats=DB.links.stats + 1).where(DB.links.id == data.id).execute()
-    return RedirectResponse(url=data.url)
+    response = {
+        'turl': turl,
+        'token': token,
+        'expired_at': expired_at,
+        'onetime': req.onetime,
+    }
+    return {'data': response, 'info': info}
 
 
 @router.delete('/shorten', response_model=dict)
 async def deleteurl(req: VerifyUser):
-    data = DB.links.get_or_none(DB.links.turl == req.turl)
+    turl = req.turl.split('/')[-1]
+    data = DB.links.get_or_none(DB.links.turl == turl)
     if not data or data.token != req.token:
-        raise HTTPException(status_code=404, detail='turl does not exist')
+        raise HTTPException(status_code=404, detail='Turl does not exist')
+    redis.delete(f"turl:{turl}")
     DB.links.update(turl=None).where(DB.links.id == data.id).execute()
-    return {'data': 'turl has been deleted'}
+    return {'data': f'turl {turl} has been deleted'}
 
 
 @router.put('/shorten', response_model=dict)
 async def puturl(req: VerifyUser):
-    data = DB.links.get_or_none(DB.links.turl == req.turl)
+    turl = req.turl.split('/')[-1]
+    data = DB.links.get_or_none(DB.links.turl == turl)
     if not data or data.token != req.token:
-        raise HTTPException(status_code=404, detail='turl does not exist')
+        message = f'Turl {turl} does not exist'
+        raise HTTPException(status_code=404, detail=message)
     turl = genturl()
     DB.links.update(turl=turl).where(DB.links.id == data.id).execute()
-    turl = f'{domain}/shorten/{turl}'
+    turl = f'{domain}/{turl}'
     return {'turl': turl}
 
 
-@router.get('/shorten/{short_code}/stats', response_model=GetStats)
-async def getstats(short_code: str):
-    data = DB.links.get_or_none(DB.links.turl == short_code)
+@router.get('/search', response_model=TurlFull)
+async def searchurl(req: Url):
+    data = DB.links.get_or_none(DB.links.url == req.url, DB.links.turl != None)
     if not data:
-        raise HTTPException(status_code=404, detail="turl does not exist")
+        raise HTTPException(status_code=404, detail="Turl does not exist")
+    turl = f'{domain}/{data.turl}'
+    return {'turl': turl}
+
+
+@app.get('/{turl}')
+async def geturl(turl: str, hide: bool | None = None):
+    pattern = r'^[a-zA-Z0-9]{5,10}$'
+    match = re.match(pattern, turl)
+    if not match or not (url := str(redis.hget(f'turl:{turl}', 'url'))):
+        raise HTTPException(status_code=404, detail=f'Turl {turl} does not exist')
+    if hide: return RedirectResponse(url)
+    onetime = redis.hget(f'turl:{turl}', 'onetime')
+    stats = DB.links.stats + 1
+    updturl = None if onetime else turl
+    if not updturl: redis.delete(f"turl:{turl}")
+    DB.links.update(turl=updturl, stats=stats).where(DB.links.turl == turl).execute()
+    return RedirectResponse(url)
+
+
+@app.get('/{turl}/stats', response_model=GetStats)
+async def getstats(turl: str):
+    pattern = r'^[a-zA-Z0-9]{5,10}$'
+    match = re.match(pattern, turl)
+    if not match or not (data := DB.links.get_or_none(DB.links.turl == turl)):
+        raise HTTPException(status_code=404, detail=f'Turl {turl} does not exist')
     stats = {
         'url': data.url,
         'stats': data.stats,

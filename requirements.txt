@@ -1,6 +1,8 @@
+aiocron
 cryptography
 fastapi
 peewee
 pymysql
 python-dotenv
+redis
 uvicorn
