@@ -74,9 +74,10 @@ async def puturl(req: VerifyUser):
     if not data or data.token != req.token:
         message = f'Turl {turl} does not exist'
         raise HTTPException(status_code=404, detail=message)
-    turl = genturl()
-    DB.links.update(turl=turl).where(DB.links.id == data.id).execute()
-    turl = f'{domain}/{turl}'
+    newturl = genturl()
+    redis.renamenx(f'turl:{turl}', f'turl:{newturl}')
+    DB.links.update(turl=newturl).where(DB.links.id == data.id).execute()
+    turl = f'{domain}/{newturl}'
     return {'turl': turl}
 
 

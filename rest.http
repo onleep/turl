@@ -3,7 +3,7 @@ POST http://localhost:8000/links/shorten
 Content-Type: application/json
 
 {
-  "url": "http://example124.com",
+  "url": "http://google.com",
   "expired_at": "2025-03-31 18:58",
   "custom_alias": "hellow",
   "onetime": true
@@ -29,8 +29,8 @@ PUT http://localhost:8000/links/shorten/
 Content-Type: application/json
 
 {
-  "turl": "http://localhost:8000/i3De2",
-  "token": "95ab886c3aa5a6c5e556a44aadb6f6cb"
+  "turl": "http://localhost:8000/qM33S",
+  "token": "096e0eedcd07cf5e769785f975e21291"
 }
 
 

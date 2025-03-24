@@ -19,10 +19,6 @@ class PostTurl(BaseModel):
     info: dict
 
 
-# class Turl(BaseModel):
-#     turl: str = Field(pattern=r'^[a-zA-Z0-9]{5,10}$')
-
-
 class Url(BaseModel):
     url: str = Field(pattern=r'\b\w+://[^\s]+\b')
 
