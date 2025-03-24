@@ -33,7 +33,7 @@ async def posturl(req: GenTurl):
     if not turl or DB.links.get_or_none(DB.links.turl == turl):
         if turl: info['custom_alias'] = f'Turl {turl} already exist'
         turl = genturl()
-    token = gentoken()
+    token = req.token if req.token else gentoken()
     DB.links.create(
         turl=turl,
         url=req.url,
@@ -99,7 +99,7 @@ async def geturl(turl: str, hide: bool | None = None):
     if hide: return RedirectResponse(str(url))
     onetime = redis.hget(f'turl:{turl}', 'onetime')
     stats = DB.links.stats + 1
-    updturl = None if onetime else turl
+    updturl = None if onetime == '1' else turl
     if not updturl: redis.delete(f"turl:{turl}")
     DB.links.update(turl=updturl, stats=stats).where(DB.links.turl == turl).execute()
     return RedirectResponse(str(url))
@@ -118,7 +118,7 @@ async def getstats(turl: str):
         'created_at': str(data.created_at),
         'updated_at': str(data.updated_at),
     }
-    return {'stats': stats}
+    return {'data': stats}
 
 
 app.include_router(router, prefix='/links')

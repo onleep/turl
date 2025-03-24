@@ -3,7 +3,7 @@ POST http://t.tar.nz/links/shorten
 Content-Type: application/json
 
 {
-  "url": "http://google.com",
+  "url": "https://google.com",
   "expired_at": "2025-03-31 18:58",
   "custom_alias": "hellow",
   "onetime": true
@@ -15,7 +15,7 @@ GET http://t.tar.nz/hellow
 
 
 ### delete turl
-DELETE http://t.tar.nz/links/shorten/
+DELETE http://t.tar.nz/links/shorten
 Content-Type: application/json
 
 {
@@ -25,12 +25,12 @@ Content-Type: application/json
 
 
 ### change turl
-PUT http://t.tar.nz/links/shorten/
+PUT http://t.tar.nz/links/shorten
 Content-Type: application/json
 
 {
-  "turl": "http://t.tar.nz/qM33S",
-  "token": "096e0eedcd07cf5e769785f975e21291"
+  "turl": "http://t.tar.nz/BwWFd",
+  "token": "fa1309ba55fbbdaa762e1091a56f057a"
 }
 
 

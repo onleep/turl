@@ -5,6 +5,7 @@ class GenTurl(BaseModel):
     url: str = Field(pattern=r'\b\w+://[^\s]+\b')
     custom_alias: str | None = Field(default=None, pattern=r'^[a-zA-Z0-9]{6,10}$')
     expired_at: str | None = Field(default=None, pattern=r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$')
+    token: str | None = Field(default=None, pattern=r'^[a-f0-9]{32}$')
     onetime: bool = False
 
 
@@ -19,15 +20,15 @@ class PostTurl(BaseModel):
     info: dict
 
 class Stats(BaseModel):
-    url: str
     stats: int
+    url: str
     expired_at: str
     created_at: str
     updated_at: str
 
 
 class GetStats(BaseModel):
-    stats: Stats
+    data: Stats
 
 
 class TurlFull(BaseModel):
