@@ -4,6 +4,7 @@ Content-Type: application/json
 
 {
   "url": "https://google.com",
+  "token": "819684eb601ea10c29ee74f09d99b216",
   "expired_at": "2025-03-31 18:58",
   "custom_alias": "hellow",
   "onetime": true
@@ -37,5 +38,8 @@ Content-Type: application/json
 ### get stats
 GET http://t.tar.nz/hellow/stats
 
-### get turl from original_url
+### get turl by original_url
 GET http://t.tar.nz/links/search?url=http://google.com
+
+### get urls info by token
+GET http://t.tar.nz/links/info?token=819684eb601ea10c29ee74f09d99b216

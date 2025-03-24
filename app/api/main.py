@@ -85,9 +85,26 @@ async def puturl(req: VerifyUser):
 async def searchurl(url: str = Query(regex=r'\b\w+://[^\s]+\b')):
     data = DB.links.get_or_none(DB.links.url == url, DB.links.turl != None)
     if not data:
-        raise HTTPException(status_code=404, detail="Turl does not exist")
+        raise HTTPException(status_code=404, detail='Turl does not exist')
     turl = f'{domain}/{data.turl}'
     return {'turl': turl}
+
+
+@router.get('/info', response_model=dict)
+async def getinfo(token: str = Query(regex=r'^[a-f0-9]{32}$')):
+    rows = DB.links.select().where(DB.links.token == token)
+    if not rows:
+        raise HTTPException(status_code=404, detail='Token does not exist')
+    data = {}
+    for row in rows:
+        turl = f'{domain}/{row.turl}'
+        data[turl] = {}
+        data[turl]['url'] = row.url
+        data[turl]['stats'] = row.stats
+        data[turl]['onetime'] = row.onetime
+        data[turl]['expired_at'] = row.expired_at
+        data[turl]['created_at'] = row.created_at
+    return {'data': data}
 
 
 @app.get('/{turl}')
