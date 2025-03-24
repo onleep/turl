@@ -38,4 +38,4 @@ Content-Type: application/json
 GET http://localhost:8000/hellow/stats
 
 ### get turl from original_url
-GET http://localhost:8000/links/search?original_url=http://example121.com
+GET http://localhost:8000/links/search?url=http://google.com

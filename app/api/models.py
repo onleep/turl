@@ -18,11 +18,6 @@ class PostTurl(BaseModel):
     data: ReqTurl
     info: dict
 
-
-class Url(BaseModel):
-    url: str = Field(pattern=r'\b\w+://[^\s]+\b')
-
-
 class Stats(BaseModel):
     url: str
     stats: int

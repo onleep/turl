@@ -5,10 +5,10 @@ import uvicorn
 from db.mysql import DB
 from db.redis import redis
 from Dotenv import env
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
-from .models import GenTurl, GetStats, PostTurl, TurlFull, Url, VerifyUser
+from .models import GenTurl, GetStats, PostTurl, TurlFull, VerifyUser
 from .tools import gentoken, genturl
 
 app = FastAPI()
@@ -82,8 +82,8 @@ async def puturl(req: VerifyUser):
 
 
 @router.get('/search', response_model=TurlFull)
-async def searchurl(req: Url):
-    data = DB.links.get_or_none(DB.links.url == req.url, DB.links.turl != None)
+async def searchurl(url: str = Query(regex=r'\b\w+://[^\s]+\b')):
+    data = DB.links.get_or_none(DB.links.url == url, DB.links.turl != None)
     if not data:
         raise HTTPException(status_code=404, detail="Turl does not exist")
     turl = f'{domain}/{data.turl}'
@@ -94,15 +94,15 @@ async def searchurl(req: Url):
 async def geturl(turl: str, hide: bool | None = None):
     pattern = r'^[a-zA-Z0-9]{5,10}$'
     match = re.match(pattern, turl)
-    if not match or not (url := str(redis.hget(f'turl:{turl}', 'url'))):
+    if not match or not (url := redis.hget(f'turl:{turl}', 'url')):
         raise HTTPException(status_code=404, detail=f'Turl {turl} does not exist')
-    if hide: return RedirectResponse(url)
+    if hide: return RedirectResponse(str(url))
     onetime = redis.hget(f'turl:{turl}', 'onetime')
     stats = DB.links.stats + 1
     updturl = None if onetime else turl
     if not updturl: redis.delete(f"turl:{turl}")
     DB.links.update(turl=updturl, stats=stats).where(DB.links.turl == turl).execute()
-    return RedirectResponse(url)
+    return RedirectResponse(str(url))
 
 
 @app.get('/{turl}/stats', response_model=GetStats)
