@@ -13,7 +13,7 @@ from .tools import gentoken, genturl
 
 app = FastAPI()
 router = APIRouter()
-domain = env.get('URL_IP') or 'http://localhost:8000'
+domain = env.get('URL_IP')
 
 
 @router.post('/shorten', response_model=PostTurl)
