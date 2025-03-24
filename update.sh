@@ -3,4 +3,5 @@ git add .
 git remote update
 git reset --hard origin/main
 
-docker-compose restart
+docker-compose down
+docker-compose up -d

@@ -29,8 +29,7 @@ services:
       - 6379:6379
     environment:
       TZ: 'Europe/Moscow'
-    command: 
-      --requirepass ${REDIS_PASS}
+    command: --requirepass ${REDIS_PASS}
     volumes:
       - redis:/data
   phpmyadmin:
@@ -43,8 +42,8 @@ services:
     environment:
       PMA_HOST: 'mysql'
       PMA_PORT: '3306'
-      PMA_USER: 'root'
-      PMA_PASSWORD: '${DB_PASS}'
+      # PMA_USER: 'root'
+      # PMA_PASSWORD: '${DB_PASS}'
   phpredisadmin:
     image: erikdubbelboer/phpredisadmin:latest
     restart: unless-stopped
@@ -53,6 +52,8 @@ services:
     depends_on:
       - redis
     environment:
+      ADMIN_USER: 'root'
+      ADMIN_PASS: '${REDIS_PASS}'
       REDIS_1_HOST: 'redis'
       REDIS_1_PORT: '6379'
       REDIS_1_AUTH: '${REDIS_PASS}'
