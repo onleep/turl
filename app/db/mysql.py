@@ -1,5 +1,16 @@
+import time
+
 from Dotenv import env
-from peewee import SQL, AutoField, CharField, DateTimeField, Model, MySQLDatabase, IntegerField
+from logger import logging
+from peewee import (
+    SQL,
+    AutoField,
+    CharField,
+    DateTimeField,
+    IntegerField,
+    Model,
+    MySQLDatabase,
+)
 
 DBNAME = env.get('DB_NAME')
 LOGIN = env.get('DB_LOGIN')
@@ -33,4 +44,10 @@ class DB:
 
 
 def initdb():
-    db.create_tables([Links])
+    for _ in range(5):
+        try: 
+            db.create_tables([Links])
+            break
+        except: 
+            logging.error('initdb failed')
+            time.sleep(5)
