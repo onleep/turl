@@ -18,7 +18,25 @@ PASS = env.get('DB_PASS')
 IP = env.get('DB_IP')
 PORT = 3306
 
-db = MySQLDatabase(DBNAME, user=LOGIN, password=PASS, host=IP, port=PORT)
+
+class ReconnectMySQLDatabase(MySQLDatabase):
+
+    def execute_sql(self, sql, params=None, commit=True):
+        if self.is_closed():
+            self.connect()
+        else:
+            self.connection().ping(reconnect=True)
+        return super().execute_sql(sql, params, commit)
+
+
+db = ReconnectMySQLDatabase(
+    DBNAME,
+    user=LOGIN,
+    password=PASS,
+    host=IP,
+    port=PORT,
+    autorollback=True,
+)
 
 
 class BaseModel(Model):
@@ -45,9 +63,9 @@ class DB:
 
 def initdb():
     for _ in range(5):
-        try: 
+        try:
             db.create_tables([Links])
             break
-        except: 
+        except:
             logging.error('initdb failed')
             time.sleep(5)
