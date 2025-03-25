@@ -28,7 +28,6 @@ async def posturl(req: GenTurl):
     if cstm and expired > (maxtime := datenow + timedelta(days=30)):
         info['expired_at'] = 'Maxtime is 30 days'
         expired = maxtime
-
     turl = req.custom_alias
     if not turl or DB.links.get_or_none(DB.links.turl == turl):
         if turl: info['custom_alias'] = f'Turl {turl} already exist'

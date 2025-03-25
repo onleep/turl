@@ -66,6 +66,6 @@ def initdb():
         try:
             db.create_tables([Links])
             break
-        except:
-            logging.error('initdb failed')
+        except Exception:
+            logging.exception('initdb failed')
             time.sleep(5)
