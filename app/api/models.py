@@ -10,10 +10,10 @@ class GenTurl(BaseModel):
 
 
 class ReqTurl(BaseModel):
-    turl: str
-    token: str
-    expired_at: str
-    
+    turl: str = Field(pattern=r'^(https?://)?[\w.-]+(?::\d+)?/[\w]{5,10}$')
+    token: str = Field(pattern=r'^[a-f0-9]{32}$')
+    expired_at: str = Field( pattern=r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+
 
 class PostTurl(BaseModel):
     data: ReqTurl
@@ -21,10 +21,10 @@ class PostTurl(BaseModel):
 
 class Stats(BaseModel):
     stats: int
-    url: str
-    expired_at: str
-    created_at: str
-    updated_at: str
+    url: str = Field(pattern=r'\b\w+://[^\s]+\b')
+    expired_at: str = Field( pattern=r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+    created_at: str = Field( pattern=r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+    updated_at: str = Field( pattern=r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
 
 
 class GetStats(BaseModel):
@@ -37,4 +37,4 @@ class TurlFull(BaseModel):
 
 class VerifyUser(BaseModel):
     turl: str = Field(pattern=r'^(https?://)?[\w.-]+(?::\d+)?/[\w]{5,10}$')
-    token: str
+    token: str = Field(pattern=r'^[a-f0-9]{32}$')

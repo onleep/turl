@@ -35,6 +35,17 @@ Content-Type: application/json
 }
 
 
+### extend turl
+PUT http://t.tar.nz/links/extend
+Content-Type: application/json
+
+{
+  "turl": "http://t.tar.nz/BwWFd",
+  "token": "fa1309ba55fbbdaa762e1091a56f057a",
+  "expired_at": "2025-04-26 18:58:00"
+}
+
+
 ### get stats
 GET http://t.tar.nz/hellow/stats
 

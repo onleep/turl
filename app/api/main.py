@@ -8,7 +8,7 @@ from Dotenv import env
 from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
-from .models import GenTurl, GetStats, PostTurl, TurlFull, VerifyUser
+from .models import GenTurl, GetStats, PostTurl, ReqTurl, TurlFull, VerifyUser
 from .tools import gentoken, genturl
 
 app = FastAPI()
@@ -22,7 +22,8 @@ async def posturl(req: GenTurl):
     datenow = datetime.now()
     expired = datenow + timedelta(days=7)
     if cstm := req.expired_at:
-        texpiried = datetime.strptime(cstm, f'%Y-%m-%d %H:%M')
+        try: texpiried = datetime.strptime(cstm, f'%Y-%m-%d %H:%M')
+        except: raise HTTPException(status_code=404, detail='Invalid date')
         if texpiried > datenow: expired = texpiried
         else: info['expired_at'] = 'Mintime is 1 day'
     if cstm and expired > (maxtime := datenow + timedelta(days=30)):
@@ -78,6 +79,29 @@ async def puturl(req: VerifyUser):
     DB.links.update(turl=newturl).where(DB.links.id == data.id).execute()
     turl = f'{domain}/{newturl}'
     return {'turl': turl}
+
+
+@router.put('/extend', response_model=PostTurl)
+async def extendurl(req: ReqTurl):
+    turl = req.turl.split('/')[-1]
+    data = DB.links.get_or_none(DB.links.turl == turl)
+    if not data or data.token != req.token:
+        message = f'Turl {turl} does not exist'
+        raise HTTPException(status_code=404, detail=message)
+    info = {}
+    try: reqexpired = datetime.strptime(req.expired_at, f'%Y-%m-%d %H:%M:%S')
+    except: raise HTTPException(status_code=404, detail='Invalid date')
+    maxtime = data.created_at + timedelta(days=30)
+    if reqexpired < (exp := data.expired_at):
+        detail = f'Mintime is 1+ days. Current expired: {exp}'
+        raise HTTPException(status_code=404, detail=detail)
+    if reqexpired > maxtime:
+        info['expired_at'] = 'Maxtime is 30 days'
+        reqexpired = maxtime
+    redis.expireat(f"turl:{turl}", int(reqexpired.timestamp()))
+    DB.links.update(expired_at=reqexpired).where(DB.links.id == data.id).execute()
+    data = {'turl': req.turl, 'expired_at': str(reqexpired), 'token': req.token}
+    return {'data': data, 'info': info}
 
 
 @router.get('/search', response_model=TurlFull)
