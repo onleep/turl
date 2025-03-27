@@ -22,7 +22,7 @@ async def posturl(req: GenTurl):
     datenow = datetime.now()
     expired = datenow + timedelta(days=7)
     if cstm := req.expired_at:
-        try: texpiried = datetime.strptime(cstm, f'%Y-%m-%d %H:%M')
+        try: texpiried = datetime.strptime(cstm, f'%Y-%m-%d %H:%M:%S')
         except: raise HTTPException(status_code=404, detail='Invalid date')
         if texpiried > datenow: expired = texpiried
         else: info['expired_at'] = 'Mintime is 1 day'
@@ -105,7 +105,7 @@ async def extendurl(req: ReqTurl):
 
 
 @router.get('/search', response_model=TurlFull)
-async def searchurl(url: str = Query(regex=r'\b\w+://[^\s]+\b')):
+async def searchurl(url: str = Query(pattern=r'\b\w+://[^\s]+\b')):
     data = DB.links.get_or_none(DB.links.url == url, DB.links.turl != None)
     if not data:
         raise HTTPException(status_code=404, detail='Turl does not exist')
@@ -114,7 +114,7 @@ async def searchurl(url: str = Query(regex=r'\b\w+://[^\s]+\b')):
 
 
 @router.get('/info', response_model=dict)
-async def getinfo(token: str = Query(regex=r'^[a-f0-9]{32}$')):
+async def getinfo(token: str = Query(pattern=r'^[a-f0-9]{32}$')):
     rows = DB.links.select().where(DB.links.token == token)
     if not rows:
         raise HTTPException(status_code=404, detail='Token does not exist')

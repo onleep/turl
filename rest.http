@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "url": "https://google.com",
   "token": "819684eb601ea10c29ee74f09d99b216",
-  "expired_at": "2025-03-31 18:58",
+  "expired_at": "2025-03-31 18:58:00",
   "custom_alias": "hellow",
   "onetime": true
 }

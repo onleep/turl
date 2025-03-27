@@ -48,7 +48,7 @@ class Links(BaseModel):
 
 | `token` (string) — Токен в формате hexadecimal string  
 
-| `expired_at` (string) — Дата истечения (YYYY-MM-DD HH:MM)  
+| `expired_at` (string) — Дата истечения (YYYY-MM-DD HH:MM:SS)  
 
 | `onetime` (boolean) — Удалять после первого использования
 ```http
@@ -57,7 +57,7 @@ Content-Type: application/json
 
 {
   "url": "http://google.com",
-  "expired_at": "2025-03-31 18:58",
+  "expired_at": "2025-03-31 18:58:00",
   "custom_alias": "hellow",
   "onetime": true
 }

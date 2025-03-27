@@ -35,7 +35,6 @@ db = ReconnectMySQLDatabase(
     password=PASS,
     host=IP,
     port=PORT,
-    autorollback=True,
 )
 
 

@@ -1,8 +1,11 @@
 aiocron
 cryptography
+fakeredis
 fastapi
+httpx
 peewee
 pymysql
+pytest
 python-dotenv
 redis
 uvicorn
