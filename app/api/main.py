@@ -5,7 +5,7 @@ import uvicorn
 from db.mysql import DB
 from db.redis import redis
 from Dotenv import env
-from fastapi import APIRouter, FastAPI, HTTPException, Query
+from fastapi import APIRouter, FastAPI, HTTPException, Path, Query
 from fastapi.responses import RedirectResponse
 
 from .models import GenTurl, GetStats, PostTurl, ReqTurl, TurlFull, VerifyUser
@@ -100,7 +100,12 @@ async def extendurl(req: ReqTurl):
         reqexpired = maxtime
     redis.expireat(f"turl:{turl}", int(reqexpired.timestamp()))
     DB.links.update(expired_at=reqexpired).where(DB.links.id == data.id).execute()
-    data = {'turl': req.turl, 'expired_at': str(reqexpired), 'token': req.token}
+    data = {
+        'turl': req.turl,
+        'expired_at': str(reqexpired),
+        'token': req.token,
+        'onetime': data.onetime,
+    }
     return {'data': data, 'info': info}
 
 
@@ -146,17 +151,15 @@ async def geturl(turl: str, hide: bool | None = None):
 
 
 @app.get('/{turl}/stats', response_model=GetStats)
-async def getstats(turl: str):
-    pattern = r'^[a-zA-Z0-9]{5,10}$'
-    match = re.match(pattern, turl)
-    if not match or not (data := DB.links.get_or_none(DB.links.turl == turl)):
+async def getstats(turl: str = Path(pattern=r'^[a-zA-Z0-9]{5,10}$')):
+    if not (data := DB.links.get_or_none(DB.links.turl == turl)):
         raise HTTPException(status_code=404, detail=f'Turl {turl} does not exist')
     stats = {
         'url': data.url,
         'stats': data.stats,
-        'expired_at': str(data.expired_at),
-        'created_at': str(data.created_at),
-        'updated_at': str(data.updated_at),
+        'expired_at': str(data.expired_at.replace(microsecond=0)),
+        'created_at': str(data.created_at.replace(microsecond=0)),
+        'updated_at': str(data.updated_at.replace(microsecond=0)),
     }
     return {'data': stats}
 
