@@ -8,12 +8,13 @@ import time
 domain = env.get('URL_IP')
 
 
-def test_links_search(DB):
-    with patch('api.main.DB', DB):
+def test_links_search(DB, redis):
+    with patch.multiple('api.main', DB=DB, redis=redis):
         response = client.get('/links/search', params={"url": "https://google.com"})
 
+    # response
     assert response.status_code == 200
-    assert response.json() == {"turl": f"{env.get('URL_IP')}/nmuiP"}
+    assert response.json() == {"turl": f"{domain}/nmuiP"}
 
 
 def test_posturl(DB, redis):
@@ -139,4 +140,3 @@ def test_extendurl(DB, redis):
     assert abs(int(newttl) - int(redttl)) < 5
     assert redrow[b'url'].decode() == outrow.url
     assert redrow[b'onetime'].decode() == f"{int(outrow.onetime)}"
-
