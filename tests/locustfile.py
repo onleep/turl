@@ -35,7 +35,7 @@ class PostUrlUser(HttpUser):
 @events.test_start.add_listener
 def start_fastapi_server(environment, **kwargs):
     threading.Thread(target=run_fastapi).start()
-    time.sleep(5)
+    time.sleep(2)
 
 
 def run_fastapi():
