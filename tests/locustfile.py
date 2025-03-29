@@ -28,8 +28,8 @@ class PostUrlUser(HttpUser):
         self.client.post("/links/shorten", json=params)
 
         with self.client.post("/links/shorten", json=params) as response:
-            if response.status_code == 200: print(f"✅ {response.text}")
-            else: print(f"❌ {response.status_code}, Ответ: {response.text}")
+            if response.status_code != 200:
+                print(f"❌ {response.status_code}, Ответ: {response.text}")
 
 
 @events.test_start.add_listener

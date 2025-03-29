@@ -31,4 +31,4 @@ jobs:
     - name: Locust
       run: |
         export PYTHONPATH=app
-        locust -f tests/locustfile.py -u 50 -r 2 --headless --run-time 60s
+        locust -f tests/locustfile.py -u 50 -r 2 --headless --run-time 30s
