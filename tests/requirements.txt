@@ -1,0 +1,9 @@
+fakeredis
+fastapi
+httpx
+locust
+peewee
+pytest
+pytest-cov
+python-dotenv
+uvicorn
